@@ -87,21 +87,15 @@ public class MathPuzzleSolver {
             "0192".toCharArray()
         };
         
-        int COMBINATOR_MAX = 2744;
-        
         int target = 6;
-        
-        Combination a = new Combination(2, 3);
-        System.out.println(Arrays.toString(a.nextState()));
-        System.out.println(Arrays.toString(a.nextState()));
-        System.out.println(Arrays.toString(a.nextState()));
-        System.out.println(Arrays.toString(a.nextState()));
-        System.out.println(Arrays.toString(a.nextState()));
         
         System.exit(0);
         
         for (int formID = 0; formID < solvingForms.length; formID++) {
             for (int valueID = 0; valueID < valueForms.length; valueID++) {
+                char[] form = solvingForms[formID];
+                //Easy access to values
+                int[] values = new int[4];
                 
             }
         }
