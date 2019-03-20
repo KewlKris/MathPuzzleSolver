@@ -96,6 +96,7 @@ public class MathPuzzleSolver {
             set_solutions.add(new ArrayList<String>());
         }
         
+        MUTATOR_DEPTH = 1;
         for (int formID = 0; formID < solvingForms.length; formID++) {
             long startTime = Instant.now().toEpochMilli();
             for (int valueID = 0; valueID < valueForms.length; valueID++) {
@@ -108,14 +109,19 @@ public class MathPuzzleSolver {
                 Combination combs = new Combination(COMB_OPERATION_COUNT, 3);
 
                 while (combs.canIncrement()) {
-                    try {
-                        int returnValue = (int)solveForm(form, values, combs);
-                        if (returnValue >= 0 && returnValue <= 100) {
-                            //System.out.println("Solution found! | " + toPrefix(form, values, combs));
-                            set_solutions.get(returnValue).add(toPrefix(form, values, combs));
+                    Combination muts = new Combination(MUT_OPERATION_COUNT, form.length*MUTATOR_DEPTH);
+                    while (muts.canIncrement()) {
+                        try {
+                            int returnValue = (int)solveForm(form, values, combs, muts);
+                            if (returnValue >= 0 && returnValue <= 100) {
+                                //System.out.println("Solution found! | " + toPrefix(form, values, combs));
+                                set_solutions.get(returnValue).add(toPrefix(form, values, combs, muts));
+                                //System.out.println(returnValue);
+                            }
+                        } catch (ArithmeticException e) {
+                            
                         }
-                    } catch (ArithmeticException e) {
-
+                        muts.nextState();
                     }
                     combs.nextState();
                 }
@@ -134,27 +140,49 @@ public class MathPuzzleSolver {
         System.out.println(String.format("Solved %d/%d", solvedCount, 101));
     }
     
+    public static int MUTATOR_DEPTH;
     public static int TARGET;
-    public static double solveForm(char[] form, int[] values, Combination combs) throws ArithmeticException {
+    public static double solveForm(char[] form, int[] values, Combination combs, Combination muts) throws ArithmeticException {
         INDEX = -1;
-        return evaluate(form, values, combs);
+        return evaluate(form, values, combs, muts);
     }
     
     private static int INDEX = -1;
-    public static double evaluate(char[] form, int[] values, Combination combs) throws ArithmeticException {
+    public static double evaluate(char[] form, int[] values, Combination combs, Combination muts) throws ArithmeticException {
         INDEX++;
         char c = form[INDEX];
         double value = 0;
         if (c == 'x' || c == 'y' || c == 'z') { //If it's a combination
-            double valueA = evaluate(form, values, combs);
-            double valueB = evaluate(form, values, combs);
+            double valueA = evaluate(form, values, combs, muts);
+            double valueB = evaluate(form, values, combs, muts);
             
             value = performOperation(valueA, valueB, combs.getState()[String.valueOf(c).compareTo("x")]);
         } else if (c == 'a' || c == 'b' || c == 'c' || c == 'd') { //If it's a constant
             value = values[String.valueOf(c).compareTo("a")];
         }
         
+        for (int x = MUTATOR_DEPTH-1; x>=0; x--)
+        {
+            value = performMutation(value, muts.getState()[INDEX+x]);
+        }
+        
         return value;
+    }
+    
+    public static int MUT_OPERATION_COUNT = 2;
+    public static double performMutation(double valueA, int operationID) throws ArithmeticException {
+        switch (operationID) {
+            case 0:
+                return valueA;
+            case 1:
+                return Math.floor(valueA);
+            case 2:
+                return Math.ceil(valueA);
+            case 3:
+                return Math.sqrt(valueA);
+        }
+        System.out.println("Invalid mutation!");
+        return 0;
     }
     
     public static int COMB_OPERATION_COUNT = 14;
@@ -193,10 +221,14 @@ public class MathPuzzleSolver {
         return 0;
     }
     
-    public static String toPrefix(char[] form, int[] values, Combination combs) {
+    public static String toPrefix(char[] form, int[] values, Combination combs, Combination muts) {
         
         String newForm = "";
         for (int x=0; x<form.length; x++) {
+            for (int y=MUTATOR_DEPTH-1; y>=0; y--) {
+                newForm += 'm' + String.valueOf(muts.getState()[x+y]);
+            }
+            
             char c = form[x];
             if (c == 'x' || c == 'y' || c == 'z') { //If it's a combination
                 newForm += "c" + String.valueOf(combs.getState()[String.valueOf(c).compareTo("x")]);
