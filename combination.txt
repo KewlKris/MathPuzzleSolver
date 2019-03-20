@@ -1,0 +1,13 @@
+-
+*
+/
+atan2(a, b)
+floorDiv(a, b)
+floorMod(a, b)
+hypot(a, b)
+IEEEremainder(a, b)
+max(a, b)
+min(a, b)
+nextAfter(a, b)
+pow(a, b)
+scalb(a, b)
