@@ -3,9 +3,11 @@ package mathpuzzlesolver;
 import java.util.Arrays;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.io.*;
 
 public class MathPuzzleSolver {
-    public static void main(String[] args) {
+    public static PrintWriter[] OUTPUT;
+    public static void main(String[] args) throws IOException {
         char[][] solvingForms = new char[][]
         {
             "xyzabcd".toCharArray(),
@@ -42,6 +44,13 @@ public class MathPuzzleSolver {
             "0192".toCharArray()
         };
         
+        OUTPUT = new PrintWriter[101];
+        for (int x=0; x<OUTPUT.length; x++) {
+            OUTPUT[x] = new PrintWriter(new BufferedWriter(new FileWriter(new File(String.format("./output/%d.txt", x)))));
+        }
+        
+        boolean[] solutionFoundList = new boolean[101];
+        
         //System.exit(0);
         //String[][] set_solutions = new String[101][];
         ArrayList<ArrayList<String>> set_solutions = new ArrayList<ArrayList<String>>();
@@ -68,29 +77,36 @@ public class MathPuzzleSolver {
                             int returnValue = (int)solveForm(form, values, combs, muts);
                             if (returnValue >= 0 && returnValue <= 100) {
                                 //System.out.println("Solution found! | " + toPrefix(form, values, combs));
-                                set_solutions.get(returnValue).add(toPrefix(form, values, combs, muts));
+                                //set_solutions.get(returnValue).add(toPrefix(form, values, combs, muts));
                                 //System.out.println(returnValue);
+                                OUTPUT[returnValue].println(toPrefix(form, values, combs, muts));
+                                solutionFoundList[returnValue] = true;
                             }
                         } catch (ArithmeticException e) {
                             
                         }
                         muts.nextState();
                     }
+                    flushOutput();
                     combs.nextState();
                 }
             }
             long stopTime = Instant.now().toEpochMilli();
             double formsPerSecond = (double)valueForms.length / (double)((stopTime - startTime) / 1000d);
-            //System.out.println(String.format("Running at %s valueForms/sec", String.valueOf(formsPerSecond)));    
+            System.out.println(String.format("Running at %s valueForms/sec", String.valueOf(formsPerSecond)));    
         }
         
         int solvedCount = 0;
-        for (ArrayList<String> s : set_solutions) {
-            if (s.size() > 0) {
+        for (int x=0; x<solutionFoundList.length; x++) {
+            if (solutionFoundList[x]) {
                 solvedCount++;
             }
         }
         System.out.println(String.format("Solved %d/%d", solvedCount, 101));
+        
+        for (int x=0; x<OUTPUT.length; x++) {
+            OUTPUT[x].close();
+        }
     }
     
     public static int MUTATOR_DEPTH;
@@ -122,7 +138,7 @@ public class MathPuzzleSolver {
         return value;
     }
     
-    public static int MUT_OPERATION_COUNT = 2;
+    public static int MUT_OPERATION_COUNT = 4;
     public static double performMutation(double valueA, int operationID) throws ArithmeticException {
         switch (operationID) {
             case 0:
@@ -174,17 +190,23 @@ public class MathPuzzleSolver {
         return 0;
     }
     
+    public static void flushOutput() {
+        for (int x=0; x<OUTPUT.length; x++) {
+            OUTPUT[x].flush();
+        }
+    }
+    
     public static String toPrefix(char[] form, int[] values, Combination combs, Combination muts) {
         
         String newForm = "";
         for (int x=0; x<form.length; x++) {
             for (int y=MUTATOR_DEPTH-1; y>=0; y--) {
-                newForm += 'm' + String.valueOf(muts.getState()[x+y]);
+                newForm += 'm' + String.valueOf(muts.getState()[x+y]) + 'm';
             }
             
             char c = form[x];
             if (c == 'x' || c == 'y' || c == 'z') { //If it's a combination
-                newForm += "c" + String.valueOf(combs.getState()[String.valueOf(c).compareTo("x")]);
+                newForm += 'c' + String.valueOf(combs.getState()[String.valueOf(c).compareTo("x")]) + 'c';
             } else if (c == 'a' || c == 'b' || c == 'c' || c == 'd') { //If it's a constant
                 newForm += String.valueOf(values[String.valueOf(c).compareTo("a")]).charAt(0);
             }
