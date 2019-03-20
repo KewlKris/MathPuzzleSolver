@@ -89,56 +89,55 @@ public class MathPuzzleSolver {
             "0192".toCharArray()
         };
         
-        TARGET = 1;
-        
         //System.exit(0);
-        String[][] set_solutions = new String[101][];
-        int solvedCount = 0;
+        //String[][] set_solutions = new String[101][];
+        ArrayList<ArrayList<String>> set_solutions = new ArrayList<ArrayList<String>>();
+        for(int x=0; x<101; x++) {
+            set_solutions.add(new ArrayList<String>());
+        }
         
-        for (TARGET = 0; TARGET <= 100; TARGET++) {
-            ArrayList<String> target_solutions = new ArrayList<String>();
-            boolean solutionFound = false;
-            for (int formID = 0; formID < solvingForms.length; formID++) {
-                long startTime = Instant.now().toEpochMilli();
-                for (int valueID = 0; valueID < valueForms.length; valueID++) {
-                    char[] form = solvingForms[formID];
-                    //Easy access to values
-                    int[] values = new int[4];
-                    for (int x=0; x<valueForms[valueID].length; x++) {
-                        values[x] = Integer.parseInt(String.valueOf(valueForms[valueID][x]));
-                    }
-                    Combination combs = new Combination(COMB_OPERATION_COUNT, 3);
-
-                    while (combs.canIncrement()) {
-                        try {
-                            if (solveForm(form, values, combs)) {
-                                //System.out.println("Solution found! | " + toPrefix(form, values, combs));
-                                target_solutions.add(toPrefix(form, values, combs));
-                                solutionFound = true;
-                            }
-                        } catch (ArithmeticException e) {
-                            
-                        }
-                        combs.nextState();
-                    }
+        for (int formID = 0; formID < solvingForms.length; formID++) {
+            long startTime = Instant.now().toEpochMilli();
+            for (int valueID = 0; valueID < valueForms.length; valueID++) {
+                char[] form = solvingForms[formID];
+                //Easy access to values
+                int[] values = new int[4];
+                for (int x=0; x<valueForms[valueID].length; x++) {
+                    values[x] = Integer.parseInt(String.valueOf(valueForms[valueID][x]));
                 }
-                long stopTime = Instant.now().toEpochMilli();
-                double formsPerSecond = (double)valueForms.length / (double)((stopTime - startTime) / 1000d);
-                //System.out.println(String.format("Running at %s valueForms/sec", String.valueOf(formsPerSecond)));    
+                Combination combs = new Combination(COMB_OPERATION_COUNT, 3);
+
+                while (combs.canIncrement()) {
+                    try {
+                        int returnValue = (int)solveForm(form, values, combs);
+                        if (returnValue >= 0 && returnValue <= 100) {
+                            //System.out.println("Solution found! | " + toPrefix(form, values, combs));
+                            set_solutions.get(returnValue).add(toPrefix(form, values, combs));
+                        }
+                    } catch (ArithmeticException e) {
+
+                    }
+                    combs.nextState();
+                }
             }
-            if (solutionFound) {
-                System.out.println(TARGET);
+            long stopTime = Instant.now().toEpochMilli();
+            double formsPerSecond = (double)valueForms.length / (double)((stopTime - startTime) / 1000d);
+            //System.out.println(String.format("Running at %s valueForms/sec", String.valueOf(formsPerSecond)));    
+        }
+        
+        int solvedCount = 0;
+        for (ArrayList<String> s : set_solutions) {
+            if (s.size() > 0) {
                 solvedCount++;
             }
-            set_solutions[TARGET] = target_solutions.toArray(new String[0]);
         }
         System.out.println(String.format("Solved %d/%d", solvedCount, 101));
     }
     
     public static int TARGET;
-    public static boolean solveForm(char[] form, int[] values, Combination combs) throws ArithmeticException {
+    public static double solveForm(char[] form, int[] values, Combination combs) throws ArithmeticException {
         INDEX = -1;
-        return evaluate(form, values, combs) == TARGET;
+        return evaluate(form, values, combs);
     }
     
     private static int INDEX = -1;
