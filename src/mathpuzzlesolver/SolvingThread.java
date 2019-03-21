@@ -22,7 +22,7 @@ public class SolvingThread extends Thread {
     }
     
     public void run() {
-        System.out.println(Arrays.toString(valueForm));
+        //System.out.println(Arrays.toString(valueForm));
         //Easy access to values
         int[] values = new int[4];
         for (int x=0; x<valueForm.length; x++) {
@@ -48,7 +48,7 @@ public class SolvingThread extends Thread {
                         MathPuzzleSolver.solutionFoundList[returnValue] = true;
                     }
                 } catch (ArithmeticException e) {
-
+                    
                 }
                 muts.nextState();
             }
@@ -61,6 +61,12 @@ public class SolvingThread extends Thread {
                 for (int x=0; x< MathPuzzleSolver.OUTPUT.length; x++) {
                      MathPuzzleSolver.OUTPUT[x].flush();
                 }
+                
+            }
+            
+            solutionList = new ArrayList<ArrayList<String>>();
+            for (int x=0; x<=100; x++) {
+                solutionList.add(new ArrayList<String>());
             }
             combs.nextState();
         }
