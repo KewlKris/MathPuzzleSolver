@@ -9,10 +9,11 @@ public class MathPuzzleSolver {
     public static PrintWriter[] OUTPUT;
     public static boolean[] threadBusy;
     public static boolean[] solutionFoundList;
+    public static int[] scores;
     
     public static int threadCount;
     public static void main(String[] args) throws IOException, InterruptedException {
-        threadCount = 12;
+        threadCount = 4;
         char[][] solvingForms = new char[][]
         {
             "xyzabcd".toCharArray(),
@@ -61,6 +62,8 @@ public class MathPuzzleSolver {
         
         threadBusy = new boolean[threadCount];
         SolvingThread[] threadList = new SolvingThread[threadCount];
+        
+        scores = new int[101];
         
         MUTATOR_DEPTH = 1;
         for (int formID = 0; formID < solvingForms.length; formID++) {
@@ -111,7 +114,7 @@ public class MathPuzzleSolver {
     
     public static int MUTATOR_DEPTH;
     
-    public static int MUT_OPERATION_COUNT = 4;
+    public static int MUT_OPERATION_COUNT = /*27*/20;
     
-    public static int COMB_OPERATION_COUNT = 14;
+    public static int COMB_OPERATION_COUNT = /*14*/5;
 }
