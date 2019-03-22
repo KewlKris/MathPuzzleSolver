@@ -151,7 +151,7 @@ public class SolvingThread extends Thread {
             case 4:
                 return Math.cos(valueA);
             case 5:
-                return Math.log(valueA);
+                return Math.exp(valueA);
             case 6:
                 return Math.floor(valueA);
             case 7:
@@ -213,7 +213,7 @@ public class SolvingThread extends Thread {
         return toStandardIteration(form, values, combs, muts);
     }
     
-    private final String[] mutatorStrings = new String[] {"", "abs", "cbrt", "ceil", "cos", "log", "floor", "sin", "sqrt", "tan"};
+    private final String[] mutatorStrings = new String[] {"", "abs", "cbrt", "ceil", "cos", "exp", "floor", "sin", "sqrt", "tan"};
     private final String[] combinationStrings = new String[] {"", "", "", "", "hypot", "pow"};
     private boolean isMutator = true;
     private String toStandardIteration(char[] form, int[] values, Combination combs, Combination muts) {
