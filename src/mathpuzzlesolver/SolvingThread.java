@@ -23,21 +23,11 @@ public class SolvingThread extends Thread {
     }
     
     public void run() {
-        
-        
-        //System.out.println(Arrays.toString(valueForm));
         //Easy access to values
         int[] values = new int[4];
         for (int x=0; x<valueForm.length; x++) {
             values[x] = Integer.parseInt(String.valueOf(valueForm[x]));
         }
-        /*
-        Combination c = new Combination(new int[] {0, 0, 0}, 3);
-        Combination m = new Combination(new int[] {0, 0, 0, 0, 4, 0, 0}, 10);
-        
-        solveForm(solvingForm, values,  c, m);
-        System.exit(0);
-        */
         
         Combination combs = new Combination(COMB_OPERATION_COUNT, 3);
         
@@ -50,12 +40,8 @@ public class SolvingThread extends Thread {
             Combination muts = new Combination(MUT_OPERATION_COUNT, solvingForm.length*MUTATOR_DEPTH);
             while (muts.canIncrement()) {
                 try {
-                    //System.out.println("NEW!");
                     int returnValue = (int)solveForm(solvingForm, values, combs, muts);
                     if (returnValue >= 0 && returnValue <= 100) {
-                        //System.out.println("Solution found! | " + toPrefix(form, values, combs));
-                        //set_solutions.get(returnValue).add(toPrefix(form, values, combs, muts));
-                        //System.out.println(returnValue);
                         int score = scoreEquation(solvingForm, values, combs, muts);
                         if (MathPuzzleSolver.scores[returnValue] == 0 || (MathPuzzleSolver.scores[returnValue] >= score)) {
                             if (score < MathPuzzleSolver.scores[returnValue]) {
@@ -101,7 +87,6 @@ public class SolvingThread extends Thread {
     
     public double solveForm(char[] form, int[] values, Combination combs, Combination muts) throws ArithmeticException {
         INDEX = 0;
-        //System.out.println(toPrefix(form, values, combs, muts));
         return evaluate(form, values, combs, muts);
     }
     
@@ -111,26 +96,18 @@ public class SolvingThread extends Thread {
         double value = 0;
         char c = form[INDEX];
         int baseIndex = INDEX;
-        //System.out.println(value + " before comb");
         if (c == 'x' || c == 'y' || c == 'z') { //If it's a combination
             INDEX++;
             double valueA = evaluate(form, values, combs, muts);
-            //System.out.println(valueA + " valueA");
             INDEX++;
             double valueB = evaluate(form, values, combs, muts);
-            //System.out.println(valueB + " valueB");
 
             value = performOperation(valueA, valueB, combs.getState()[String.valueOf(c).compareTo("x")]);
-            //System.out.println(value + " performed value");
         } else if (c == 'a' || c == 'b' || c == 'c' || c == 'd') { //If it's a constant
             value = values[String.valueOf(c).compareTo("a")];
-            //System.out.println(value + " is a constant");
         }
         
-        //System.out.println(value + " before mut");
         value = performMutation(value, muts.getState()[baseIndex]);
-        
-        //System.out.println(value + " after mut");
         
         return value;
     }
@@ -220,7 +197,6 @@ public class SolvingThread extends Thread {
         int tempIndex = standardIndex;
         String statement = "";
         if (isMutator) {
-            //System.out.println("isMut");
             isMutator = false;
             if (muts.getState()[standardIndex] == 0) {
                 statement += toStandardIteration(form, values, combs, muts);
@@ -231,7 +207,6 @@ public class SolvingThread extends Thread {
             statement += ")";
             return statement;
         }
-        //System.out.println("isStandard");
         isMutator = true;
         
         char c = form[standardIndex];

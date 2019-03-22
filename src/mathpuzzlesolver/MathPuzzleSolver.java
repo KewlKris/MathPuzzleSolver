@@ -13,12 +13,11 @@ public class MathPuzzleSolver {
     
     public static int threadCount;
     public static void main(String[] args) throws IOException, InterruptedException {
+        /*
+        The number of logical processors your computer has. If you're running this
+        on one of the school computers, set this value to 2.
+        */
         threadCount = 12;
-        
-        
-        //System.out.println(((9 - (1 + Math.cos(0))) * 2));
-        //System.exit(0);
-        
         
         char[][] solvingForms = new char[][]
         {
@@ -62,9 +61,6 @@ public class MathPuzzleSolver {
         }
         
         solutionFoundList = new boolean[101];
-        
-        //System.exit(0);
-        //String[][] set_solutions = new String[101][];
         
         threadBusy = new boolean[threadCount];
         SolvingThread[] threadList = new SolvingThread[threadCount];
