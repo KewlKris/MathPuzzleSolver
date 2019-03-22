@@ -2,6 +2,7 @@ package mathpuzzlesolver;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.io.*;
 
 public class SolvingThread extends Thread {
     private char[] solvingForm;
@@ -22,12 +23,22 @@ public class SolvingThread extends Thread {
     }
     
     public void run() {
+        
+        
         //System.out.println(Arrays.toString(valueForm));
         //Easy access to values
         int[] values = new int[4];
         for (int x=0; x<valueForm.length; x++) {
             values[x] = Integer.parseInt(String.valueOf(valueForm[x]));
         }
+        /*
+        Combination c = new Combination(new int[] {0, 0, 0}, 3);
+        Combination m = new Combination(new int[] {0, 0, 0, 0, 4, 0, 0}, 10);
+        
+        solveForm(solvingForm, values,  c, m);
+        System.exit(0);
+        */
+        
         Combination combs = new Combination(COMB_OPERATION_COUNT, 3);
         
         ArrayList<ArrayList<String>> solutionList = new ArrayList<ArrayList<String>>();
@@ -39,6 +50,7 @@ public class SolvingThread extends Thread {
             Combination muts = new Combination(MUT_OPERATION_COUNT, solvingForm.length*MUTATOR_DEPTH);
             while (muts.canIncrement()) {
                 try {
+                    //System.out.println("NEW!");
                     int returnValue = (int)solveForm(solvingForm, values, combs, muts);
                     if (returnValue >= 0 && returnValue <= 100) {
                         //System.out.println("Solution found! | " + toPrefix(form, values, combs));
@@ -46,7 +58,17 @@ public class SolvingThread extends Thread {
                         //System.out.println(returnValue);
                         int score = scoreEquation(solvingForm, values, combs, muts);
                         if (MathPuzzleSolver.scores[returnValue] == 0 || (MathPuzzleSolver.scores[returnValue] >= score)) {
-                            solutionList.get(returnValue).add(toPrefix(solvingForm, values, combs, muts));
+                            if (score < MathPuzzleSolver.scores[returnValue]) {
+                                synchronized (MathPuzzleSolver.OUTPUT) {
+                                    try {
+                                        MathPuzzleSolver.OUTPUT[returnValue] = new PrintWriter(new BufferedWriter(new FileWriter(new File(String.format("./output/%d.txt", returnValue)))));
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                solutionList.set(returnValue, new ArrayList<String>());
+                            }
+                            solutionList.get(returnValue).add(toStandard(solvingForm, values, combs, muts));
                             MathPuzzleSolver.solutionFoundList[returnValue] = true;
                             MathPuzzleSolver.scores[returnValue] = score;
                         }
@@ -78,34 +100,43 @@ public class SolvingThread extends Thread {
     }
     
     public double solveForm(char[] form, int[] values, Combination combs, Combination muts) throws ArithmeticException {
-        INDEX = -1;
+        INDEX = 0;
+        //System.out.println(toPrefix(form, values, combs, muts));
         return evaluate(form, values, combs, muts);
     }
     
-    private int INDEX = -1;
+    private int INDEX = 0;
+    private boolean eIsMutator = true;
     public double evaluate(char[] form, int[] values, Combination combs, Combination muts) throws ArithmeticException {
-        INDEX++;
-        char c = form[INDEX];
         double value = 0;
+        char c = form[INDEX];
+        int baseIndex = INDEX;
+        //System.out.println(value + " before comb");
         if (c == 'x' || c == 'y' || c == 'z') { //If it's a combination
+            INDEX++;
             double valueA = evaluate(form, values, combs, muts);
+            //System.out.println(valueA + " valueA");
+            INDEX++;
             double valueB = evaluate(form, values, combs, muts);
-            
+            //System.out.println(valueB + " valueB");
+
             value = performOperation(valueA, valueB, combs.getState()[String.valueOf(c).compareTo("x")]);
+            //System.out.println(value + " performed value");
         } else if (c == 'a' || c == 'b' || c == 'c' || c == 'd') { //If it's a constant
             value = values[String.valueOf(c).compareTo("a")];
+            //System.out.println(value + " is a constant");
         }
         
-        for (int x = MUTATOR_DEPTH-1; x>=0; x--)
-        {
-            value = performMutation(value, muts.getState()[INDEX+x]);
-        }
+        //System.out.println(value + " before mut");
+        value = performMutation(value, muts.getState()[baseIndex]);
+        
+        //System.out.println(value + " after mut");
         
         return value;
     }
     
     private static int[] MUTATOR_SCORES = new int[] {
-        0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
+        0, 1, 10, 2, 15, 15, 2, 15, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
     };
     public static double performMutation(double valueA, int operationID) throws ArithmeticException {
         switch (operationID) {
@@ -114,62 +145,28 @@ public class SolvingThread extends Thread {
             case 1:
                 return Math.abs(valueA);
             case 2:
-                return Math.acos(valueA);
-            case 3:
-                return Math.asin(valueA);
-            case 4:
-                return Math.atan(valueA);
-            case 5:
                 return Math.cbrt(valueA);
-            case 6:
+            case 3:
                 return Math.ceil(valueA);
-            case 7:
+            case 4:
                 return Math.cos(valueA);
-            case 8:
-                return Math.cosh(valueA);
-            case 9:
-                return Math.exp(valueA);
-            case 10:
-                return Math.expm1(valueA);
-            case 11:
-                return Math.floor(valueA);
-            case 12:
-                return Math.getExponent(valueA);
-            case 13:
-                return Math.incrementExact((int)valueA);
-            case 14:
+            case 5:
                 return Math.log(valueA);
-            case 15:
-                return Math.log(10);
-            case 16:
-                return Math.log1p(valueA);
-            case 17:
-                return Math.negateExact((int)valueA);
-            case 18:
-                return Math.signum(valueA);
-            case 19:
+            case 6:
+                return Math.floor(valueA);
+            case 7:
                 return Math.sin(valueA);
-            case 20:
-                return Math.sinh(valueA);
-            case 21:
+            case 8:
                 return Math.sqrt(valueA);
-            case 22:
+            case 9:
                 return Math.tan(valueA);
-            case 23:
-                return Math.tanh(valueA);
-            case 24:
-                return Math.toDegrees(valueA);
-            case 25:
-                return Math.toRadians(valueA);
-            case 26:
-                return Math.ulp(valueA);
         }
         System.out.println("Invalid mutation!");
         return 0;
     }
     
     public static int[] OPERATION_SCORES = new int[] {
-        1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+        1, 3, 5, 8, 10, 5, 3, 3, 3, 3, 3, 3, 3, 3
     };
     public static double performOperation(double valueA, double valueB, int operationID) throws ArithmeticException {
         switch (operationID) {
@@ -182,25 +179,9 @@ public class SolvingThread extends Thread {
             case 3:
                 return valueA / valueB;
             case 4:
-                return Math.atan2(valueA, valueB);
-            case 5:
-                return Math.floorDiv((int)valueA, (int)valueB);
-            case 6:
-                return Math.floorMod((int)valueA, (int)valueB);
-            case 7:
                 return Math.hypot(valueA, valueB);
-            case 8:
-                return Math.IEEEremainder(valueA, valueB);
-            case 9:
-                return Math.max(valueA, valueB);
-            case 10:
-                return Math.min(valueA, valueB);
-            case 11:
-                return Math.nextAfter(valueA, valueB);
-            case 12:
+            case 5:
                 return Math.pow(valueA, valueB);
-            case 13:
-                return Math.scalb(valueA, (int)valueB);
         }
         System.out.println("Invalid operation!");
         return 0;
@@ -225,6 +206,75 @@ public class SolvingThread extends Thread {
         return newForm;
     }
     
+    private int standardIndex = 0;
+    public String toStandard(char[] form, int[] values, Combination combs, Combination muts) {
+        standardIndex = 0;
+        isMutator = true;
+        return toStandardIteration(form, values, combs, muts);
+    }
+    
+    private final String[] mutatorStrings = new String[] {"", "abs", "cbrt", "ceil", "cos", "log", "floor", "sin", "sqrt", "tan"};
+    private final String[] combinationStrings = new String[] {"", "", "", "", "hypot", "pow"};
+    private boolean isMutator = true;
+    private String toStandardIteration(char[] form, int[] values, Combination combs, Combination muts) {
+        int tempIndex = standardIndex;
+        String statement = "";
+        if (isMutator) {
+            //System.out.println("isMut");
+            isMutator = false;
+            if (muts.getState()[standardIndex] == 0) {
+                statement += toStandardIteration(form, values, combs, muts);
+                return statement;
+            }
+            statement += "Math." + mutatorStrings[muts.getState()[standardIndex]] + "(";
+            statement += toStandardIteration(form, values, combs, muts);
+            statement += ")";
+            return statement;
+        }
+        //System.out.println("isStandard");
+        isMutator = true;
+        
+        char c = form[standardIndex];
+        if (c == 'x' || c == 'y' || c == 'z') { //If it's a combination
+            standardIndex++;
+            String valueA = toStandardIteration(form, values, combs, muts);
+            standardIndex++;
+            String valueB = toStandardIteration(form, values, combs, muts);
+            
+            if (combs.getState()[String.valueOf(c).compareTo("x")] <= 3) {
+                char symbol = 'N';
+                switch (combs.getState()[String.valueOf(c).compareTo("x")]) {
+                    case 0:
+                        symbol = '+';
+                        break;
+                    case 1:
+                        symbol = '-';
+                        break;
+                    case 2:
+                        symbol = '*';
+                        break;
+                    case 3:
+                        symbol = '/';
+                        break;
+                }
+                
+                statement += "(" + valueA + " " + symbol + " " + valueB + ")";
+                return statement;
+            }
+            
+            statement += "Math." + combinationStrings[combs.getState()[tempIndex]] + "(";
+            statement += valueA + ", " + valueB;
+            statement += ")";
+            return statement;
+        } else if (c == 'a' || c == 'b' || c == 'c' || c == 'd') { //If it's a constant
+            statement += String.valueOf(values[String.valueOf(c).compareTo("a")]);
+            return statement;
+        }
+        
+        System.out.println("Standard not caught! " + c + " " + (c == 'x'));
+        return statement;
+    }
+    
     public int scoreEquation(char[] form, int[] values, Combination combs, Combination muts) {
         int[] mutScores = MUTATOR_SCORES.clone();
         int[] comScores = OPERATION_SCORES.clone();
@@ -239,6 +289,9 @@ public class SolvingThread extends Thread {
         
         //Score mutations
         for (int x=0; x<muts.getDimension(); x++) {
+            if (muts.getState()[x] == 0) {
+                continue;
+            }
             score += mutScores[muts.getState()[x]];
             mutScores[muts.getState()[x]]++;
         }

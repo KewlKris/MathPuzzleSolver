@@ -14,6 +14,13 @@ public class Combination {
         state = new int[dimension];
     }
     
+    public Combination(int[] state, int numStates) {
+        this.numStates = numStates;
+        this.dimension = state.length;
+        
+        this.state = state;
+    }
+    
     public int[] getState()
     {
         return state;

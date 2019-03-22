@@ -13,7 +13,13 @@ public class MathPuzzleSolver {
     
     public static int threadCount;
     public static void main(String[] args) throws IOException, InterruptedException {
-        threadCount = 4;
+        threadCount = 12;
+        
+        
+        //System.out.println(((9 - (1 + Math.cos(0))) * 2));
+        //System.exit(0);
+        
+        
         char[][] solvingForms = new char[][]
         {
             "xyzabcd".toCharArray(),
@@ -114,7 +120,7 @@ public class MathPuzzleSolver {
     
     public static int MUTATOR_DEPTH;
     
-    public static int MUT_OPERATION_COUNT = /*27*/20;
+    public static int MUT_OPERATION_COUNT = /*27*/9;
     
-    public static int COMB_OPERATION_COUNT = /*14*/5;
+    public static int COMB_OPERATION_COUNT = /*14*/6;
 }
